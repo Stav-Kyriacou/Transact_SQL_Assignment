@@ -1,6 +1,9 @@
 --USE TRANSACT_SQL
 --SELECT * FROM INFORMATION_SCHEMA.TABLES
 
+
+----------------------------------ADD_CUSTOMER---------------------------------------
+
 IF OBJECT_ID('ADD_CUSTOMER') IS NOT NULL
     DROP PROCEDURE ADD_CUSTOMER;
 
@@ -34,10 +37,34 @@ END;
 
 GO
 
-SELECT * FROM CUSTOMER
-DELETE FROM CUSTOMER
+-- SELECT * FROM CUSTOMER
+-- DELETE FROM CUSTOMER
 
-EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'yes';
-EXEC ADD_CUSTOMER @pcustid = 0, @pcustname = 'yes';
-EXEC ADD_CUSTOMER @pcustid = 500, @pcustname = 'yes';
-EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'yes';
+-- EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'yes';
+-- EXEC ADD_CUSTOMER @pcustid = 0, @pcustname = 'yes';
+-- EXEC ADD_CUSTOMER @pcustid = 500, @pcustname = 'yes';
+-- EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'yes';
+
+
+----------------------------------ADD_CUSTOMER---------------------------------------
+
+IF OBJECT_ID('DELETE_ALL_CUSTOMERS') IS NOT NULL
+    DROP FUNCTION DELETE_ALL_CUSTOMERS;
+
+GO
+
+CREATE FUNCTION DELETE_ALL_CUSTOMERS RETURNS INT AS
+BEGIN
+    DECLARE @ROW_COUNT INT;
+    BEGIN TRY
+
+        SET @ROW_COUNT = SELECT COUNT(*) FROM CUSTOMER;
+        DELETE FROM CUSTOMER;
+
+    END TRY
+    BEGIN CATCH
+        
+    END CATCH
+
+    RETURN @ROW_COUNT;
+END
