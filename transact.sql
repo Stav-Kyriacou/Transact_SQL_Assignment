@@ -40,31 +40,42 @@ GO
 -- SELECT * FROM CUSTOMER
 -- DELETE FROM CUSTOMER
 
--- EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'yes';
--- EXEC ADD_CUSTOMER @pcustid = 0, @pcustname = 'yes';
--- EXEC ADD_CUSTOMER @pcustid = 500, @pcustname = 'yes';
--- EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'yes';
+-- EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'a';
+-- EXEC ADD_CUSTOMER @pcustid = 2, @pcustname = 'b';
+-- EXEC ADD_CUSTOMER @pcustid = 0, @pcustname = 'c';
+-- EXEC ADD_CUSTOMER @pcustid = 500, @pcustname = 'd';
+-- EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'e';
 
 
 ----------------------------------ADD_CUSTOMER---------------------------------------
 
 IF OBJECT_ID('DELETE_ALL_CUSTOMERS') IS NOT NULL
-    DROP FUNCTION DELETE_ALL_CUSTOMERS;
+    DROP PROCEDURE DELETE_ALL_CUSTOMERS;
 
 GO
 
-CREATE FUNCTION DELETE_ALL_CUSTOMERS RETURNS INT AS
+CREATE PROCEDURE DELETE_ALL_CUSTOMERS AS
 BEGIN
     DECLARE @ROW_COUNT INT;
     BEGIN TRY
 
-        SET @ROW_COUNT = SELECT COUNT(*) FROM CUSTOMER;
+        SELECT @ROW_COUNT = COUNT(*) FROM CUSTOMER;
         DELETE FROM CUSTOMER;
 
     END TRY
     BEGIN CATCH
-        
-    END CATCH
 
+        THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
     RETURN @ROW_COUNT;
 END
+
+GO
+
+-- DECLARE @customers INT
+-- EXEC @customers = DELETE_ALL_CUSTOMERS
+
+-- SELECT @customers
+
+
