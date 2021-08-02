@@ -86,20 +86,48 @@ IF OBJECT_ID('ADD_PRODUCT') IS NOT NULL
 
 GO
 
-CREATE PROCEDURE ADD_PRODUCT @pprodid INT, @pprodname NVARCHAR, @pprice MONEY AS
+CREATE PROCEDURE ADD_PRODUCT @pprodid INT, @pprodname NVARCHAR(100), @pprice MONEY AS
 BEGIN
     BEGIN TRY
-
         
+        IF @pprodid < 1000 OR @pprodid > 2500
+            THROW 50040, 'Product ID out of range', 1
+        
+        IF @pprice < 0 OR @pprice > 999.99
+            THROW 50050, 'Price out of range', 1
+        
+        INSERT INTO PRODUCT (PRODID, PRODNAME, SELLING_PRICE, SALES_YTD)
+        VALUES (@pprodid, @pprodname, @pprice, 0);
 
     END TRY
     BEGIN CATCH
 
-        
+        IF ERROR_NUMBER() = 2627
+            THROW 50030, 'Duplicate product ID', 1
+        ELSE
+            BEGIN
+                DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+                THROW 50000, @ERRORMESSAGE, 1
+            END
 
     END CATCH
 END
 
 GO
 
+DELETE FROM PRODUCT
 
+EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = 2
+
+--duplicate primary key check
+EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = 2
+
+--prodid range check
+EXEC ADD_PRODUCT @pprodid = 999, @pprodname = "pasta", @pprice = 2
+EXEC ADD_PRODUCT @pprodid = 2501, @pprodname = "pasta", @pprice = 2
+
+--price range check
+EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = -1
+EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = 1000
+
+SELECT * FROM PRODUCT
