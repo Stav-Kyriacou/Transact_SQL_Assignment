@@ -33,7 +33,7 @@ BEGIN
             END
 
     END CATCH
-END;
+END
 
 GO
 
@@ -47,7 +47,7 @@ GO
 -- EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'e';
 
 
-----------------------------------ADD_CUSTOMER---------------------------------------
+----------------------------------DELETE_ALL_CUSTOMERS---------------------------------------
 
 IF OBJECT_ID('DELETE_ALL_CUSTOMERS') IS NOT NULL
     DROP PROCEDURE DELETE_ALL_CUSTOMERS;
@@ -56,26 +56,50 @@ GO
 
 CREATE PROCEDURE DELETE_ALL_CUSTOMERS AS
 BEGIN
-    DECLARE @ROW_COUNT INT;
+    DECLARE @ROW_COUNT INT
     BEGIN TRY
-
-        SELECT @ROW_COUNT = COUNT(*) FROM CUSTOMER;
+        
         DELETE FROM CUSTOMER;
+        SET @ROW_COUNT = @@ROWCOUNT
 
     END TRY
     BEGIN CATCH
-
+        DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
         THROW 50000, @ERRORMESSAGE, 1
 
     END CATCH
-    RETURN @ROW_COUNT;
+    RETURN @ROW_COUNT
 END
 
 GO
 
--- DECLARE @customers INT
--- EXEC @customers = DELETE_ALL_CUSTOMERS
+DECLARE @customers INT
+EXEC @customers = DELETE_ALL_CUSTOMERS
 
--- SELECT @customers
+SELECT @customers
+
+
+----------------------------------ADD_PRODUCT---------------------------------------
+
+IF OBJECT_ID('ADD_PRODUCT') IS NOT NULL
+    DROP PROCEDURE ADD_PRODUCT;
+
+GO
+
+CREATE PROCEDURE ADD_PRODUCT @pprodid INT, @pprodname NVARCHAR, @pprice MONEY AS
+BEGIN
+    BEGIN TRY
+
+        
+
+    END TRY
+    BEGIN CATCH
+
+        
+
+    END CATCH
+END
+
+GO
 
 
