@@ -123,6 +123,7 @@ GO
 -- DELETE FROM PRODUCT
 
 -- EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = 2
+-- EXEC ADD_PRODUCT @pprodid = 1001, @pprodname = "carrots", @pprice = 3
 
 -- --duplicate primary key check
 -- EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = 2
@@ -254,11 +255,57 @@ END
 
 GO
 
--- BEGIN
---     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 10;
---     --cust does not exist check
---     EXEC UPD_CUST_SALESYTD @pcustid = 0, @pamt = 10;
---     --amt range check
---     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = -1000;
---     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 1000;
--- END
+BEGIN
+    EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 20;
+    --cust does not exist check
+    EXEC UPD_CUST_SALESYTD @pcustid = 0, @pamt = 10;
+    --amt range check
+    EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = -1000;
+    EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 1000;
+END
+
+--------------------------------------------------------------------------------------------
+----------------------------------GET_PROD_STRING-------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('GET_PROD_STRING') IS NOT NULL
+    DROP PROCEDURE GET_PROD_STRING;
+
+GO
+
+CREATE PROCEDURE GET_PROD_STRING @pprodid INT, @pReturnString NVARCHAR(100) OUTPUT AS
+BEGIN
+    BEGIN TRY
+        DECLARE @ProdName NVARCHAR(100), @Price MONEY, @SYTD MONEY
+
+        SELECT @ProdName = PRODNAME, @Price = SELLING_PRICE, @SYTD = SALES_YTD
+        FROM PRODUCT
+        WHERE PRODID = @pprodid
+
+        IF @@ROWCOUNT = 0
+            THROW 50060, 'Product ID not found', 1
+
+        SET @pReturnString = CONCAT('Prodid: ', @pprodid, ' Name: ', @ProdName, ' Price: ', @Price, ' SalesYTD: ', @SYTD)
+
+    END TRY
+    BEGIN CATCH
+        IF ERROR_NUMBER() = 50060
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+END
+
+GO
+
+
+BEGIN
+    DECLARE @testOutput NVARCHAR(100);
+
+    EXEC GET_PROD_STRING @pprodid = 1001, @pReturnString = @testOutput OUTPUT;
+
+    PRINT(@testOutput);
+
+END
