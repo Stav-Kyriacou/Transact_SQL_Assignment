@@ -209,13 +209,56 @@ END
 GO
 
 
+BEGIN
+    DECLARE @testOutput NVARCHAR(100);
+
+    EXEC GET_CUSTOMER_STRING @pcustid = 1, @pReturnString = @testOutput OUTPUT;
+
+    PRINT(@testOutput);
+
+END
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------UPD_CUST_SALESYTD-----------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('UPD_CUST_SALESYTD') IS NOT NULL
+    DROP PROCEDURE UPD_CUST_SALESYTD;
+
+GO
+
+CREATE PROCEDURE UPD_CUST_SALESYTD @pcustid INT, @pamt MONEY AS
+BEGIN
+    BEGIN TRY
+
+        UPDATE CUSTOMER
+        SET SALES_YTD += @pamt
+        WHERE CUSTID = @pcustid
+
+        IF @@ROWCOUNT = 0
+            THROW 50070, 'Customer ID not found', 1
+        IF @pamt < -999.99 OR @pamt > 999.99
+            THROW 50080, 'Amount out of range', 1
+
+    END TRY
+    BEGIN CATCH
+        IF ERROR_NUMBER() IN (50070, 50080)
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+END
+
+GO
+
 -- BEGIN
---     DECLARE @testOutput NVARCHAR(100);
-
---     EXEC GET_CUSTOMER_STRING @pcustid = 1, @pReturnString = @testOutput OUTPUT;
-
---     PRINT(@testOutput);
-
+--     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 10;
+--     --cust does not exist check
+--     EXEC UPD_CUST_SALESYTD @pcustid = 0, @pamt = 10;
+--     --amt range check
+--     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = -1000;
+--     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 1000;
 -- END
-
-
