@@ -309,3 +309,47 @@ BEGIN
     PRINT(@testOutput);
 
 END
+
+--------------------------------------------------------------------------------------------
+----------------------------------UPD_PROD_SALESYTD-----------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('UPD_PROD_SALESYTD') IS NOT NULL
+    DROP PROCEDURE UPD_PROD_SALESYTD;
+
+GO
+
+CREATE PROCEDURE UPD_PROD_SALESYTD @pprodid INT, @pamt MONEY AS
+BEGIN
+    BEGIN TRY
+
+        UPDATE PRODUCT
+        SET SALES_YTD += @pamt
+        WHERE PRODID = @pprodid
+
+        IF @@ROWCOUNT = 0
+            THROW 50070, 'Product ID not found', 1
+        IF @pamt < -999.99 OR @pamt > 999.99
+            THROW 50080, 'Amount out of range', 1
+
+    END TRY
+    BEGIN CATCH
+        IF ERROR_NUMBER() IN (50070, 50080)
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+END
+
+GO
+
+BEGIN
+    EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = 20;
+    --prod does not exist check
+    EXEC UPD_PROD_SALESYTD @pprodid = 0, @pamt = 10;
+    --amt range check
+    EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = -1000;
+    EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = 1000;
+END
