@@ -455,6 +455,7 @@ GO
 
 BEGIN 
     EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 2
+    EXEC ADD_SIMPLE_SALE @pcustid = 2, @pprodid = 1000, @pqty = 12
 
     --custid check
     EXEC ADD_SIMPLE_SALE @pcustid = 0, @pprodid = 1000, @pqty = 2
@@ -468,3 +469,41 @@ BEGIN
     EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'OK'
     EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 2
 END
+
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------SUM_CUSTOMER_SALESYTD-------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('SUM_CUSTOMER_SALESYTD') IS NOT NULL
+    DROP PROCEDURE SUM_CUSTOMER_SALESYTD
+
+GO
+
+CREATE PROCEDURE SUM_CUSTOMER_SALESYTD AS
+BEGIN
+    BEGIN TRY
+        DECLARE @SUM INT
+
+        SELECT @SUM = SUM(SALES_YTD)
+        FROM CUSTOMER
+
+    END TRY
+    BEGIN CATCH
+
+        DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+        THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+    RETURN @SUM
+END
+
+GO
+
+BEGIN
+    DECLARE @SUM_CUST_SALES INT
+    EXEC @SUM_CUST_SALES = SUM_CUSTOMER_SALESYTD
+    PRINT(@SUM_CUST_SALES)
+END
+
