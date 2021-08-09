@@ -353,3 +353,49 @@ BEGIN
     EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = -1000;
     EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = 1000;
 END
+
+--------------------------------------------------------------------------------------------
+----------------------------------UPD_CUSTOMER_STATUS---------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('UPD_CUSTOMER_STATUS') IS NOT NULL
+    DROP PROCEDURE UPD_CUSTOMER_STATUS
+
+GO
+
+CREATE PROCEDURE UPD_CUSTOMER_STATUS @pcustid INT, @pstatus NVARCHAR(7) AS
+BEGIN
+    BEGIN TRY
+
+        IF @pstatus <> 'OK' AND @pstatus <> 'SUSPEND'
+            THROW 50130, 'Invalid Status value', 1
+
+        UPDATE CUSTOMER
+        SET [STATUS] = @pstatus
+        WHERE CUSTID = @pcustid
+
+        IF @@ROWCOUNT = 0
+            THROW 50120, 'Customer ID not found', 1
+
+    END TRY
+    BEGIN CATCH
+
+        IF ERROR_NUMBER() IN (50120, 50130)
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+END
+
+GO
+
+BEGIN
+    EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'OK'
+    EXEC UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'SUSPEND'
+    --invalid status check
+    EXEC UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'fbewiuauohef'
+    --cust id not found check
+    EXEC UPD_CUSTOMER_STATUS @pcustid = 453125432, @pstatus = 'OK'
+END
