@@ -76,10 +76,13 @@ END
 
 GO
 
-DECLARE @customers INT
-EXEC @customers = DELETE_ALL_CUSTOMERS
 
-SELECT @customers
+BEGIN
+    DECLARE @customers INT
+    EXEC @customers = DELETE_ALL_CUSTOMERS
+
+    PRINT(@customers)
+END
 
 --------------------------------------------------------------------------------------------
 ----------------------------------ADD_PRODUCT-----------------------------------------------
@@ -304,7 +307,7 @@ GO
 BEGIN
     DECLARE @testOutput NVARCHAR(100);
 
-    EXEC GET_PROD_STRING @pprodid = 1001, @pReturnString = @testOutput OUTPUT;
+    EXEC GET_PROD_STRING @pprodid = 1000, @pReturnString = @testOutput OUTPUT;
 
     PRINT(@testOutput);
 
@@ -398,4 +401,70 @@ BEGIN
     EXEC UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'fbewiuauohef'
     --cust id not found check
     EXEC UPD_CUSTOMER_STATUS @pcustid = 453125432, @pstatus = 'OK'
+END
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------ADD_SIMPLE_SALE-------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('ADD_SIMPLE_SALE') IS NOT NULL
+    DROP PROCEDURE ADD_SIMPLE_SALE
+
+GO
+
+CREATE PROCEDURE ADD_SIMPLE_SALE @pcustid INT, @pprodid INT, @pqty INT AS
+BEGIN
+    BEGIN TRY
+        DECLARE @price INT, @ytdValue INT
+
+        IF @pqty < 1 OR @pqty > 999
+            THROW 50140, 'Sale Quantity outside valid range', 1
+
+        IF (SELECT [STATUS] FROM CUSTOMER WHERE CUSTID = @pcustid) <> 'OK'
+            THROW 50150, 'Customer status is not OK', 1
+        
+        IF NOT EXISTS(SELECT * FROM CUSTOMER WHERE CUSTID = @pcustid)
+            THROW 50160, 'Customer ID not found', 1
+        
+        IF NOT EXISTS(SELECT * FROM PRODUCT WHERE PRODID = @pprodid)
+            THROW 50170, 'Product ID not found', 1
+
+        SELECT @price = SELLING_PRICE
+        FROM PRODUCT
+        WHERE PRODID = @pprodid
+
+        SET @ytdValue = @pqty * @price
+
+        EXEC UPD_CUST_SALESYTD @pcustid = @pcustid, @pamt = @ytdValue
+        EXEC UPD_PROD_SALESYTD @pprodid = @pprodid, @pamt = @ytdValue
+
+    END TRY
+    BEGIN CATCH
+
+        IF ERROR_NUMBER() IN (50140, 50150, 50160, 50170)
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+END
+
+GO
+
+BEGIN 
+    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 2
+
+    --custid check
+    EXEC ADD_SIMPLE_SALE @pcustid = 0, @pprodid = 1000, @pqty = 2
+    --prodid check
+    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 0, @pqty = 2
+    --qty range check
+    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 0
+    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1000
+    --status OK check
+    EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'SUSPEND'
+    EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'OK'
+    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 2
 END
