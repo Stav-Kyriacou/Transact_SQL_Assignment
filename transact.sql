@@ -507,3 +507,38 @@ BEGIN
     PRINT(@SUM_CUST_SALES)
 END
 
+--------------------------------------------------------------------------------------------
+----------------------------------SUM_PRODUCT_SALESYTD--------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('SUM_PRODUCT_SALESYTD') IS NOT NULL
+    DROP PROCEDURE SUM_PRODUCT_SALESYTD
+
+GO
+
+CREATE PROCEDURE SUM_PRODUCT_SALESYTD AS
+BEGIN
+    BEGIN TRY
+        DECLARE @SUM INT
+
+        SELECT @SUM = SUM(SALES_YTD)
+        FROM PRODUCT
+
+    END TRY
+    BEGIN CATCH
+
+        DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+        THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+    RETURN @SUM
+END
+
+GO
+
+SELECT * FROM PRODUCT
+BEGIN
+    DECLARE @SUM_PROD_SALES INT
+    EXEC @SUM_PROD_SALES = SUM_PRODUCT_SALESYTD
+    PRINT(@SUM_PROD_SALES)
+END
