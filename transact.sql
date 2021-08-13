@@ -542,3 +542,30 @@ BEGIN
     EXEC @SUM_PROD_SALES = SUM_PRODUCT_SALESYTD
     PRINT(@SUM_PROD_SALES)
 END
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------GET_ALL_CUSTOMERS-----------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('GET_ALL_CUSTOMERS') IS NOT NULL
+    DROP PROCEDURE GET_ALL_CUSTOMERS
+
+GO
+
+CREATE PROCEDURE GET_ALL_CUSTOMERS @POUTCUR CURSOR VARYING OUTPUT AS
+BEGIN
+    BEGIN TRY
+        SET @POUTCUR = CURSOR
+        FORWARD_ONLY STATIC FOR
+        SELECT * FROM CUSTOMER
+        OPEN @POUTCUR
+
+    END TRY
+    BEGIN CATCH
+        DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+        THROW 50000, @ERRORMESSAGE, 1
+    END CATCH
+END
+
+
