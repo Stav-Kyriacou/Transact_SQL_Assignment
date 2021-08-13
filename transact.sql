@@ -570,7 +570,7 @@ END
 
 
 --------------------------------------------------------------------------------------------
-----------------------------------GET_ALL_PRODUCTS-----------------------------------------
+----------------------------------GET_ALL_PRODUCTS------------------------------------------
 --------------------------------------------------------------------------------------------
 
 IF OBJECT_ID('GET_ALL_PRODUCTS') IS NOT NULL
@@ -592,4 +592,53 @@ BEGIN
         THROW 50000, @ERRORMESSAGE, 1
     END CATCH
 END
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------ADD_LOCATION----------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('ADD_LOCATION') IS NOT NULL
+    DROP PROCEDURE ADD_LOCATION
+
+GO
+
+CREATE PROCEDURE ADD_LOCATION @ploccode NVARCHAR(MAX), @pminqty INT, @pmaxqty INT AS
+BEGIN
+    BEGIN TRY
+        --could not find how to check if a constraint check failed
+        IF LEN(@ploccode) <> 5
+            THROW 50190, 'Location Code length invalid', 1
+        ELSE IF @pminqty < 0 OR @pminqty > 999
+            THROW 50200, 'Minimum Qty out of range', 1
+        ELSE IF @pmaxqty < 0 OR @pmaxqty > 999
+            THROW 50210, 'Maximum Qty out of range', 1
+        ELSE IF @pminqty > @pmaxqty
+            THROW 50220, 'Minimum Qty larger than Maximum Qty', 1
+
+        INSERT INTO LOCATION (LOCID, MINQTY, MAXQTY) 
+        VALUES (@ploccode, @pminqty, @pmaxqty);
+
+    END TRY
+    BEGIN CATCH
+
+        IF ERROR_NUMBER() = 2627
+            THROW 50180, 'Duplicate location ID', 1
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+END
+
+GO
+
+DELETE FROM LOCATION
+SELECT * FROM LOCATION;
+
+EXEC ADD_LOCATION @ploccode = "aaa11", @pminqty = 5, @pmaxqty = 10;
+EXEC ADD_LOCATION @ploccode = "aaa22", @pminqty = 5, @pmaxqty = 10;
+EXEC ADD_LOCATION @ploccode = "aaaaa", @pminqty = 11, @pmaxqty = 10;
+EXEC ADD_LOCATION @ploccode = 'aaaaa', @pminqty = 10, @pmaxqty = 115;
+
 
