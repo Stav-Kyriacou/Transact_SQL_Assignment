@@ -624,6 +624,8 @@ BEGIN
 
         IF ERROR_NUMBER() = 2627
             THROW 50180, 'Duplicate location ID', 1
+        ELSE IF ERROR_NUMBER() IN (50190, 50200, 50210, 50220)
+            THROW
         ELSE
             DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
             THROW 50000, @ERRORMESSAGE, 1
@@ -641,4 +643,75 @@ EXEC ADD_LOCATION @ploccode = "aaa22", @pminqty = 5, @pmaxqty = 10;
 EXEC ADD_LOCATION @ploccode = "aaaaa", @pminqty = 11, @pmaxqty = 10;
 EXEC ADD_LOCATION @ploccode = 'aaaaa', @pminqty = 10, @pmaxqty = 115;
 
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------ADD_COMPLEX_SALE------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('ADD_COMPLEX_SALE') IS NOT NULL
+    DROP PROCEDURE ADD_COMPLEX_SALE
+
+GO
+
+CREATE PROCEDURE ADD_COMPLEX_SALE @pcustid INT, @pprodid INT, @pqty INT, @pdate NVARCHAR(MAX) AS
+BEGIN
+    DECLARE @price MONEY
+    DECLARE @ytdValue MONEY
+    BEGIN TRY
+
+        IF @pqty < 1 OR @pqty > 999
+            THROW 50230, 'Sale Quantity outside valid range', 1
+        ELSE IF (SELECT [STATUS] FROM CUSTOMER WHERE CUSTID = @pcustid) <> 'OK'
+            THROW 50240, 'Customer status is not OK', 1
+        ELSE IF ISDATE(@pdate) = 0
+            THROW 50250, 'Date not valid', 1
+        ELSE IF NOT EXISTS(SELECT * FROM CUSTOMER WHERE CUSTID = @pcustid)
+            THROW 50260, 'Customer ID not found', 1
+        ELSE IF NOT EXISTS(SELECT * FROM PRODUCT WHERE PRODID = @pprodid)
+            THROW 50270, 'Product ID not found', 1
+
+        SELECT @price = SELLING_PRICE FROM PRODUCT WHERE PRODID = @pprodid;
+
+        INSERT INTO SALE (SALEID, CUSTID, PRODID, QTY, PRICE, SALEDATE) VALUES
+        (NEXT VALUE FOR SALE_SEQ, @pcustid, @pprodid, @pqty, @price, @pdate);
+
+        SELECT @price = SELLING_PRICE
+        FROM PRODUCT
+        WHERE PRODID = @pprodid
+
+        SET @ytdValue = @pqty * @price
+
+        EXEC UPD_CUST_SALESYTD @pcustid = @pcustid, @pamt = @ytdValue
+        EXEC UPD_PROD_SALESYTD @pprodid = @pprodid, @pamt = @ytdValue
+
+    END TRY
+    BEGIN CATCH
+
+        IF ERROR_NUMBER() IN (50230, 50240, 50250, 50260, 50270)
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+
+    END CATCH
+END
+
+GO
+
+--test data
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
+
+--check valid cust and prop id
+EXEC ADD_COMPLEX_SALE @pcustid = 321, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 23, @pqty = 3, @pdate = '2021/08/13'
+--qty range check
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 0, @pdate = '2021/08/13'
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1000, @pdate = '2021/08/13'
+--check valid date
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1, @pdate = 'fgrewstrew'
+
+DELETE FROM SALE
+SELECT * FROM SALE
 
