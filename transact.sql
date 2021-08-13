@@ -741,3 +741,44 @@ BEGIN
 END
 
 
+--------------------------------------------------------------------------------------------
+----------------------------------COUNT_PRODUCT_SALES---------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('COUNT_PRODUCT_SALES') IS NOT NULL
+    DROP PROCEDURE COUNT_PRODUCT_SALES
+
+GO
+
+CREATE PROCEDURE COUNT_PRODUCT_SALES @pdays INT AS
+BEGIN
+    DECLARE @numSales INT
+    BEGIN TRY
+        SELECT @numSales = COUNT(*)
+        FROM SALE
+        WHERE DATEDIFF(day, SALEDATE, GETDATE()) BETWEEN 0 AND @pdays
+    END TRY
+    BEGIN CATCH
+        DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+        THROW 50000, @ERRORMESSAGE, 1
+    END CATCH
+    RETURN @numSales
+END
+
+
+--test data
+DELETE FROM SALE
+
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/11'
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/10'
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/9'
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/8'
+
+SELECT * FROM SALE
+
+BEGIN
+    DECLARE @sales INT
+    EXEC @sales = COUNT_PRODUCT_SALES @pdays = 3
+    PRINT(@sales)
+END
