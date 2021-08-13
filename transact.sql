@@ -715,3 +715,29 @@ EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1, @pdate = 'fgrews
 DELETE FROM SALE
 SELECT * FROM SALE
 
+
+--------------------------------------------------------------------------------------------
+----------------------------------GET_ALL_SALES---------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('GET_ALL_SALES') IS NOT NULL
+    DROP PROCEDURE GET_ALL_SALES
+
+GO
+
+CREATE PROCEDURE GET_ALL_SALES @POUTCUR CURSOR VARYING OUTPUT AS
+BEGIN
+    BEGIN TRY
+        SET @POUTCUR = CURSOR
+        FORWARD_ONLY STATIC FOR
+        SELECT * FROM SALE
+        OPEN @POUTCUR
+
+    END TRY
+    BEGIN CATCH
+        DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+        THROW 50000, @ERRORMESSAGE, 1
+    END CATCH
+END
+
+
