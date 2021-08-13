@@ -569,3 +569,27 @@ BEGIN
 END
 
 
+--------------------------------------------------------------------------------------------
+----------------------------------GET_ALL_PRODUCTS-----------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('GET_ALL_PRODUCTS') IS NOT NULL
+    DROP PROCEDURE GET_ALL_PRODUCTS
+
+GO
+
+CREATE PROCEDURE GET_ALL_PRODUCTS @POUTCUR CURSOR VARYING OUTPUT AS
+BEGIN
+    BEGIN TRY
+        SET @POUTCUR = CURSOR
+        FORWARD_ONLY STATIC FOR
+        SELECT * FROM PRODUCT
+        OPEN @POUTCUR
+
+    END TRY
+    BEGIN CATCH
+        DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+        THROW 50000, @ERRORMESSAGE, 1
+    END CATCH
+END
+
