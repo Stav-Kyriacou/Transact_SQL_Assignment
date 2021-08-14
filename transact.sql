@@ -866,3 +866,47 @@ END
 GO
 
 EXEC DELETE_ALL_SALES
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------DELETE_CUSTOMER------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('DELETE_CUSTOMER') IS NOT NULL
+    DROP PROCEDURE DELETE_CUSTOMER
+
+GO
+
+CREATE PROCEDURE DELETE_CUSTOMER @pcustid INT AS
+BEGIN
+    BEGIN TRY
+        IF NOT EXISTS(SELECT * FROM CUSTOMER WHERE CUSTID = @pcustid)
+            THROW 50290, 'Customer ID not found', 1
+        IF EXISTS(SELECT * FROM SALE WHERE CUSTID = @pcustid)
+            THROW 50300, 'Customer cannot be deleted as sales exist', 1
+        DELETE FROM CUSTOMER WHERE CUSTID = @pcustid
+
+    END TRY
+    BEGIN CATCH
+        IF ERROR_NUMBER() IN (50290, 50300)
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+    END CATCH
+END
+
+GO
+
+EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'a';
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
+SELECT * FROM CUSTOMER
+SELECT * FROM SALE
+
+--test
+EXEC DELETE_ALL_SALES
+EXEC DELETE_CUSTOMER @pcustid = 1
+--custid exists check
+EXEC DELETE_CUSTOMER @pcustid = 10
+--complex sale exists check
+EXEC DELETE_CUSTOMER @pcustid = 1
