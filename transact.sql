@@ -869,7 +869,7 @@ EXEC DELETE_ALL_SALES
 
 
 --------------------------------------------------------------------------------------------
-----------------------------------DELETE_CUSTOMER------------------------------------------
+----------------------------------DELETE_CUSTOMER-------------------------------------------
 --------------------------------------------------------------------------------------------
 
 IF OBJECT_ID('DELETE_CUSTOMER') IS NOT NULL
@@ -910,3 +910,47 @@ EXEC DELETE_CUSTOMER @pcustid = 1
 EXEC DELETE_CUSTOMER @pcustid = 10
 --complex sale exists check
 EXEC DELETE_CUSTOMER @pcustid = 1
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------DELETE_PRODUCT--------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('DELETE_PRODUCT') IS NOT NULL
+    DROP PROCEDURE DELETE_PRODUCT
+
+GO
+
+CREATE PROCEDURE DELETE_PRODUCT @pprodid INT AS
+BEGIN
+    BEGIN TRY
+        IF NOT EXISTS(SELECT * FROM PRODUCT WHERE PRODID = @pprodid)
+            THROW 50310, 'Product ID not found', 1
+        IF EXISTS(SELECT * FROM SALE WHERE PRODID = @pprodid)
+            THROW 50320, 'Product cannot be deleted as sales exist', 1
+        DELETE FROM PRODUCT WHERE PRODID = @pprodid
+
+    END TRY
+    BEGIN CATCH
+        IF ERROR_NUMBER() IN (50290, 50300)
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+    END CATCH
+END
+
+GO
+
+EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = 2
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
+SELECT * FROM PRODUCT
+SELECT * FROM SALE
+
+--test
+EXEC DELETE_ALL_SALES
+EXEC DELETE_PRODUCT @pprodid = 1000
+--prodid exists check
+EXEC DELETE_PRODUCT @pprodid = 10
+--complex sale exists check
+EXEC DELETE_PRODUCT @pprodid = 1000
