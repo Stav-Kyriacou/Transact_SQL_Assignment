@@ -77,12 +77,12 @@ END
 GO
 
 
-BEGIN
-    DECLARE @customers INT
-    EXEC @customers = DELETE_ALL_CUSTOMERS
+-- BEGIN
+--     DECLARE @customers INT
+--     EXEC @customers = DELETE_ALL_CUSTOMERS
 
-    PRINT(@customers)
-END
+--     PRINT(@customers)
+-- END
 
 --------------------------------------------------------------------------------------------
 ----------------------------------ADD_PRODUCT-----------------------------------------------
@@ -170,10 +170,10 @@ END
 
 GO
 
-DECLARE @products INT
-EXEC @products = DELETE_ALL_PRODUCTS
+-- DECLARE @products INT
+-- EXEC @products = DELETE_ALL_PRODUCTS
 
-SELECT @products
+-- SELECT @products
 
 
 --------------------------------------------------------------------------------------------
@@ -213,14 +213,14 @@ END
 GO
 
 
-BEGIN
-    DECLARE @testOutput NVARCHAR(100);
+-- BEGIN
+--     DECLARE @testOutput NVARCHAR(100);
 
-    EXEC GET_CUSTOMER_STRING @pcustid = 1, @pReturnString = @testOutput OUTPUT;
+--     EXEC GET_CUSTOMER_STRING @pcustid = 1, @pReturnString = @testOutput OUTPUT;
 
-    PRINT(@testOutput);
+--     PRINT(@testOutput);
 
-END
+-- END
 
 
 --------------------------------------------------------------------------------------------
@@ -258,14 +258,14 @@ END
 
 GO
 
-BEGIN
-    EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 20;
-    --cust does not exist check
-    EXEC UPD_CUST_SALESYTD @pcustid = 0, @pamt = 10;
-    --amt range check
-    EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = -1000;
-    EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 1000;
-END
+-- BEGIN
+--     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 20;
+--     --cust does not exist check
+--     EXEC UPD_CUST_SALESYTD @pcustid = 0, @pamt = 10;
+--     --amt range check
+--     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = -1000;
+--     EXEC UPD_CUST_SALESYTD @pcustid = 1, @pamt = 1000;
+-- END
 
 --------------------------------------------------------------------------------------------
 ----------------------------------GET_PROD_STRING-------------------------------------------
@@ -304,14 +304,14 @@ END
 GO
 
 
-BEGIN
-    DECLARE @testOutput NVARCHAR(100);
+-- BEGIN
+--     DECLARE @testOutput NVARCHAR(100);
 
-    EXEC GET_PROD_STRING @pprodid = 1000, @pReturnString = @testOutput OUTPUT;
+--     EXEC GET_PROD_STRING @pprodid = 1000, @pReturnString = @testOutput OUTPUT;
 
-    PRINT(@testOutput);
+--     PRINT(@testOutput);
 
-END
+-- END
 
 --------------------------------------------------------------------------------------------
 ----------------------------------UPD_PROD_SALESYTD-----------------------------------------
@@ -348,14 +348,14 @@ END
 
 GO
 
-BEGIN
-    EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = 20;
-    --prod does not exist check
-    EXEC UPD_PROD_SALESYTD @pprodid = 0, @pamt = 10;
-    --amt range check
-    EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = -1000;
-    EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = 1000;
-END
+-- BEGIN
+--     EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = 20;
+--     --prod does not exist check
+--     EXEC UPD_PROD_SALESYTD @pprodid = 0, @pamt = 10;
+--     --amt range check
+--     EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = -1000;
+--     EXEC UPD_PROD_SALESYTD @pprodid = 1000, @pamt = 1000;
+-- END
 
 --------------------------------------------------------------------------------------------
 ----------------------------------UPD_CUSTOMER_STATUS---------------------------------------
@@ -394,14 +394,14 @@ END
 
 GO
 
-BEGIN
-    EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'OK'
-    EXEC UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'SUSPEND'
-    --invalid status check
-    EXEC UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'fbewiuauohef'
-    --cust id not found check
-    EXEC UPD_CUSTOMER_STATUS @pcustid = 453125432, @pstatus = 'OK'
-END
+-- BEGIN
+--     EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'OK'
+--     EXEC UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'SUSPEND'
+--     --invalid status check
+--     EXEC UPD_CUSTOMER_STATUS @pcustid = 2, @pstatus = 'fbewiuauohef'
+--     --cust id not found check
+--     EXEC UPD_CUSTOMER_STATUS @pcustid = 453125432, @pstatus = 'OK'
+-- END
 
 
 --------------------------------------------------------------------------------------------
@@ -453,23 +453,22 @@ END
 
 GO
 
-BEGIN 
-    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 2
-    EXEC ADD_SIMPLE_SALE @pcustid = 2, @pprodid = 1000, @pqty = 12
+-- BEGIN 
+--     EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 2
+--     EXEC ADD_SIMPLE_SALE @pcustid = 2, @pprodid = 1000, @pqty = 12
 
-    --custid check
-    EXEC ADD_SIMPLE_SALE @pcustid = 0, @pprodid = 1000, @pqty = 2
-    --prodid check
-    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 0, @pqty = 2
-    --qty range check
-    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 0
-    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1000
-    --status OK check
-    EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'SUSPEND'
-    EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'OK'
-    EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 2
-END
-
+--     --custid check
+--     EXEC ADD_SIMPLE_SALE @pcustid = 0, @pprodid = 1000, @pqty = 2
+--     --prodid check
+--     EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 0, @pqty = 2
+--     --qty range check
+--     EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 0
+--     EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1000
+--     --status OK check
+--     EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'SUSPEND'
+--     EXEC UPD_CUSTOMER_STATUS @pcustid = 1, @pstatus = 'OK'
+--     EXEC ADD_SIMPLE_SALE @pcustid = 1, @pprodid = 1000, @pqty = 2
+-- END
 
 
 --------------------------------------------------------------------------------------------
@@ -501,11 +500,11 @@ END
 
 GO
 
-BEGIN
-    DECLARE @SUM_CUST_SALES INT
-    EXEC @SUM_CUST_SALES = SUM_CUSTOMER_SALESYTD
-    PRINT(@SUM_CUST_SALES)
-END
+-- BEGIN
+--     DECLARE @SUM_CUST_SALES INT
+--     EXEC @SUM_CUST_SALES = SUM_CUSTOMER_SALESYTD
+--     PRINT(@SUM_CUST_SALES)
+-- END
 
 --------------------------------------------------------------------------------------------
 ----------------------------------SUM_PRODUCT_SALESYTD--------------------------------------
@@ -536,12 +535,12 @@ END
 
 GO
 
-SELECT * FROM PRODUCT
-BEGIN
-    DECLARE @SUM_PROD_SALES INT
-    EXEC @SUM_PROD_SALES = SUM_PRODUCT_SALESYTD
-    PRINT(@SUM_PROD_SALES)
-END
+-- SELECT * FROM PRODUCT
+-- BEGIN
+--     DECLARE @SUM_PROD_SALES INT
+--     EXEC @SUM_PROD_SALES = SUM_PRODUCT_SALESYTD
+--     PRINT(@SUM_PROD_SALES)
+-- END
 
 
 --------------------------------------------------------------------------------------------
@@ -635,14 +634,13 @@ END
 
 GO
 
-DELETE FROM LOCATION
-SELECT * FROM LOCATION;
+-- DELETE FROM LOCATION
+-- SELECT * FROM LOCATION;
 
-EXEC ADD_LOCATION @ploccode = "aaa11", @pminqty = 5, @pmaxqty = 10;
-EXEC ADD_LOCATION @ploccode = "aaa22", @pminqty = 5, @pmaxqty = 10;
-EXEC ADD_LOCATION @ploccode = "aaaaa", @pminqty = 11, @pmaxqty = 10;
-EXEC ADD_LOCATION @ploccode = 'aaaaa', @pminqty = 10, @pmaxqty = 115;
-
+-- EXEC ADD_LOCATION @ploccode = "aaa11", @pminqty = 5, @pmaxqty = 10;
+-- EXEC ADD_LOCATION @ploccode = "aaa22", @pminqty = 5, @pmaxqty = 10;
+-- EXEC ADD_LOCATION @ploccode = "aaaaa", @pminqty = 11, @pmaxqty = 10;
+-- EXEC ADD_LOCATION @ploccode = 'aaaaa', @pminqty = 10, @pmaxqty = 115;
 
 
 --------------------------------------------------------------------------------------------
@@ -699,21 +697,21 @@ END
 
 GO
 
---test data
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
+-- --test data
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
 
---check valid cust and prop id
-EXEC ADD_COMPLEX_SALE @pcustid = 321, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 23, @pqty = 3, @pdate = '2021/08/13'
---qty range check
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 0, @pdate = '2021/08/13'
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1000, @pdate = '2021/08/13'
---check valid date
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1, @pdate = 'fgrewstrew'
+-- --check valid cust and prop id
+-- EXEC ADD_COMPLEX_SALE @pcustid = 321, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/13'
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 23, @pqty = 3, @pdate = '2021/08/13'
+-- --qty range check
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 0, @pdate = '2021/08/13'
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1000, @pdate = '2021/08/13'
+-- --check valid date
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 1, @pdate = 'fgrewstrew'
 
-DELETE FROM SALE
-SELECT * FROM SALE
+-- DELETE FROM SALE
+-- SELECT * FROM SALE
 
 
 --------------------------------------------------------------------------------------------
@@ -767,21 +765,21 @@ END
 
 
 --test data
-DELETE FROM SALE
+-- DELETE FROM SALE
 
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/11'
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/10'
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/9'
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/8'
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/11'
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/10'
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/9'
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/8'
 
-SELECT * FROM SALE
+-- SELECT * FROM SALE
 
-BEGIN
-    DECLARE @sales INT
-    EXEC @sales = COUNT_PRODUCT_SALES @pdays = 3
-    PRINT(@sales)
-END
+-- BEGIN
+--     DECLARE @sales INT
+--     EXEC @sales = COUNT_PRODUCT_SALES @pdays = 3
+--     PRINT(@sales)
+-- END
 
 
 --------------------------------------------------------------------------------------------
@@ -825,15 +823,15 @@ END
 
 GO
 
-DELETE FROM SALE
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
-SELECT * FROM SALE
+-- DELETE FROM SALE
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
+-- SELECT * FROM SALE
 
-BEGIN
-DECLARE @saleid BIGINT
-EXEC DELETE_SALE @saleid = @saleid OUTPUT
-PRINT(@saleid)
-END
+-- BEGIN
+-- DECLARE @saleid BIGINT
+-- EXEC DELETE_SALE @saleid = @saleid OUTPUT
+-- PRINT(@saleid)
+-- END
 
 
 --------------------------------------------------------------------------------------------
@@ -865,7 +863,7 @@ END
 
 GO
 
-EXEC DELETE_ALL_SALES
+-- EXEC DELETE_ALL_SALES
 
 
 --------------------------------------------------------------------------------------------
@@ -898,18 +896,18 @@ END
 
 GO
 
-EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'a';
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
-SELECT * FROM CUSTOMER
-SELECT * FROM SALE
+-- EXEC ADD_CUSTOMER @pcustid = 1, @pcustname = 'a';
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
+-- SELECT * FROM CUSTOMER
+-- SELECT * FROM SALE
 
---test
-EXEC DELETE_ALL_SALES
-EXEC DELETE_CUSTOMER @pcustid = 1
---custid exists check
-EXEC DELETE_CUSTOMER @pcustid = 10
---complex sale exists check
-EXEC DELETE_CUSTOMER @pcustid = 1
+-- --test
+-- EXEC DELETE_ALL_SALES
+-- EXEC DELETE_CUSTOMER @pcustid = 1
+-- --custid exists check
+-- EXEC DELETE_CUSTOMER @pcustid = 10
+-- --complex sale exists check
+-- EXEC DELETE_CUSTOMER @pcustid = 1
 
 
 --------------------------------------------------------------------------------------------
@@ -942,15 +940,15 @@ END
 
 GO
 
-EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = 2
-EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
-SELECT * FROM PRODUCT
-SELECT * FROM SALE
+-- EXEC ADD_PRODUCT @pprodid = 1000, @pprodname = "pasta", @pprice = 2
+-- EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
+-- SELECT * FROM PRODUCT
+-- SELECT * FROM SALE
 
---test
-EXEC DELETE_ALL_SALES
-EXEC DELETE_PRODUCT @pprodid = 1000
---prodid exists check
-EXEC DELETE_PRODUCT @pprodid = 10
---complex sale exists check
-EXEC DELETE_PRODUCT @pprodid = 1000
+-- --test
+-- EXEC DELETE_ALL_SALES
+-- EXEC DELETE_PRODUCT @pprodid = 1000
+-- --prodid exists check
+-- EXEC DELETE_PRODUCT @pprodid = 10
+-- --complex sale exists check
+-- EXEC DELETE_PRODUCT @pprodid = 1000
