@@ -835,3 +835,34 @@ EXEC DELETE_SALE @saleid = @saleid OUTPUT
 PRINT(@saleid)
 END
 
+
+--------------------------------------------------------------------------------------------
+----------------------------------DELETE_ALL_SALES------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('DELETE_ALL_SALES') IS NOT NULL
+    DROP PROCEDURE DELETE_ALL_SALES
+
+GO
+
+CREATE PROCEDURE DELETE_ALL_SALES  AS
+BEGIN
+    BEGIN TRY
+        DELETE FROM SALE
+
+        UPDATE CUSTOMER
+        SET SALES_YTD = 0;
+
+        UPDATE PRODUCT
+        SET SALES_YTD = 0;
+
+    END TRY
+    BEGIN CATCH
+        DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+        THROW 50000, @ERRORMESSAGE, 1
+    END CATCH
+END
+
+GO
+
+EXEC DELETE_ALL_SALES
