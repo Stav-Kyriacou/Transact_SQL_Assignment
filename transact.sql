@@ -782,3 +782,56 @@ BEGIN
     EXEC @sales = COUNT_PRODUCT_SALES @pdays = 3
     PRINT(@sales)
 END
+
+
+--------------------------------------------------------------------------------------------
+----------------------------------DELETE_SALE-----------------------------------------------
+--------------------------------------------------------------------------------------------
+
+IF OBJECT_ID('DELETE_SALE') IS NOT NULL
+    DROP PROCEDURE DELETE_SALE
+
+GO
+
+CREATE PROCEDURE DELETE_SALE @saleid BIGINT OUTPUT AS
+BEGIN
+    DECLARE @custid INT, @prodid INT, @price INT, @qty INT, @amt INT
+    BEGIN TRY
+        SELECT @saleid = SALEID, @custid = CUSTID, @prodid = PRODID, @price = PRICE, @qty = QTY
+        FROM SALE
+        WHERE SALEID = (SELECT MIN(SALEID) FROM SALE)
+
+        IF @@ROWCOUNT = 0
+            THROW 50280, 'No Sale Rows Found', 1;
+
+        SET @amt = -1 * (@price * @qty)
+        EXEC UPD_CUST_SALESYTD @pcustid = @custid, @pamt = @amt
+        EXEC UPD_PROD_SALESYTD @pprodid = @prodid, @pamt = @amt
+
+        DELETE FROM SALE
+        WHERE SALEID = (SELECT MIN(SALEID) FROM SALE)
+
+        IF @@ROWCOUNT = 0
+            THROW 50280, 'No Sale Rows Found', 1;
+    END TRY
+    BEGIN CATCH
+        IF ERROR_NUMBER() = 50280
+            THROW
+        ELSE
+            DECLARE @ERRORMESSAGE NVARCHAR(MAX) = ERROR_MESSAGE();
+            THROW 50000, @ERRORMESSAGE, 1
+    END CATCH
+END
+
+GO
+
+DELETE FROM SALE
+EXEC ADD_COMPLEX_SALE @pcustid = 1, @pprodid = 1000, @pqty = 3, @pdate = '2021/08/12'
+SELECT * FROM SALE
+
+BEGIN
+DECLARE @saleid BIGINT
+EXEC DELETE_SALE @saleid = @saleid OUTPUT
+PRINT(@saleid)
+END
+
